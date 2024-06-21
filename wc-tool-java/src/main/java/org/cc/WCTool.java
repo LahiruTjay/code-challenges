@@ -31,24 +31,40 @@ public class WCTool implements Callable<Integer> {
     @Override
     public Integer call() throws IOException {
 
-        System.out.println(noOfBytes);
-        System.out.println(noOfLines);
-        System.out.println(noOfWords);
-        System.out.println(noOfCharacters);
-
         File file = new File(fileName);
         byte[] bytes = Files.readAllBytes(file.toPath());
 
-        System.out.println(countNoOfBytes(bytes));
-        System.out.println(countNoOfLines(bytes));
-        System.out.println(countNoOfWords(bytes));
-        System.out.println(countNoOfCharacters(bytes));
+        String result = getResult(bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
+        System.out.println(result);
 
         return 0;
     }
 
-    public void getResult() {
+    public String getResult(byte[] bytes, boolean noOfBytes, boolean noOfLines, boolean noOfWords, boolean noOfCharacters) {
+        StringBuilder result = new StringBuilder();
 
+        if (noOfBytes) {
+            return result.append(countNoOfBytes(bytes)).toString();
+        }
+
+        if (noOfLines) {
+            return result.append(countNoOfLines(bytes)).toString();
+        }
+
+        if (noOfWords) {
+            return result.append(countNoOfWords(bytes)).toString();
+        }
+
+        if (noOfCharacters) {
+            return result.append(countNoOfCharacters(bytes)).toString();
+        }
+
+        return result.append(countNoOfLines(bytes))
+                .append(" ")
+                .append(countNoOfWords(bytes))
+                .append(" ")
+                .append(countNoOfBytes(bytes))
+                .toString();
     }
 
     public int countNoOfBytes(byte[] bytes) {
@@ -66,13 +82,9 @@ public class WCTool implements Callable<Integer> {
     }
 
     public int countNoOfWords(byte[] bytes) {
-        int count = 0;
-        for (byte fileByte : bytes) {
-            if (fileByte == ' ') {
-                count++;
-            }
-        }
-        return count;
+        String str = new String(bytes);
+        String[] strArray = str.split("\\s+");
+        return strArray.length;
     }
 
     public int countNoOfCharacters(byte[] bytes) {
