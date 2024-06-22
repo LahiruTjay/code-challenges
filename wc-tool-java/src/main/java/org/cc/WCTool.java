@@ -9,7 +9,9 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name = "WC Tool",
-        description = ""
+        description = "Word Count Tool In Java",
+        version = "1.0",
+        mixinStandardHelpOptions = true
 )
 public class WCTool implements Callable<Integer> {
 
@@ -34,37 +36,33 @@ public class WCTool implements Callable<Integer> {
         File file = new File(fileName);
         byte[] bytes = Files.readAllBytes(file.toPath());
 
-        String result = getResult(bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
+        String result = getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
         System.out.println(result);
 
         return 0;
     }
 
-    public String getResult(byte[] bytes, boolean noOfBytes, boolean noOfLines, boolean noOfWords, boolean noOfCharacters) {
-        StringBuilder result = new StringBuilder();
+    public String getResult(String fileName, byte[] bytes, boolean noOfBytes, boolean noOfLines,
+                            boolean noOfWords, boolean noOfCharacters) {
 
         if (noOfBytes) {
-            return result.append(countNoOfBytes(bytes)).toString();
+            return String.format("%s %s", countNoOfBytes(bytes), fileName);
         }
 
         if (noOfLines) {
-            return result.append(countNoOfLines(bytes)).toString();
+            return String.format("%s %s", countNoOfLines(bytes), fileName);
         }
 
         if (noOfWords) {
-            return result.append(countNoOfWords(bytes)).toString();
+            return String.format("%s %s", countNoOfWords(bytes), fileName);
         }
 
         if (noOfCharacters) {
-            return result.append(countNoOfCharacters(bytes)).toString();
+            return String.format("%s %s", countNoOfCharacters(bytes), fileName);
         }
 
-        return result.append(countNoOfLines(bytes))
-                .append(" ")
-                .append(countNoOfWords(bytes))
-                .append(" ")
-                .append(countNoOfBytes(bytes))
-                .toString();
+        return String.format("%s %s %s %s", countNoOfLines(bytes), countNoOfWords(bytes),
+                countNoOfBytes(bytes), fileName);
     }
 
     public int countNoOfBytes(byte[] bytes) {
