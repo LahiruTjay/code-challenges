@@ -15,8 +15,8 @@ import java.util.concurrent.Callable;
 )
 public class WCTool implements Callable<Integer> {
 
-    @CommandLine.Parameters(index = "0", description = "Input File")
-    private String fileName;
+    @CommandLine.Parameters(index = "0", description = "Input File", arity = "0..1")
+    private File file;
 
     @CommandLine.Option(names = {"-c"}, description = "Number of Bytes in the File")
     private boolean noOfBytes;
@@ -33,8 +33,15 @@ public class WCTool implements Callable<Integer> {
     @Override
     public Integer call() throws IOException {
 
-        File file = new File(fileName);
-        byte[] bytes = Files.readAllBytes(file.toPath());
+        byte[] bytes;
+        String fileName = "";
+
+        if (file != null) {
+            bytes = Files.readAllBytes(file.toPath());
+            fileName = file.getName();
+        } else {
+            bytes = System.in.readAllBytes();
+        }
 
         String result = getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
         System.out.println(result);
