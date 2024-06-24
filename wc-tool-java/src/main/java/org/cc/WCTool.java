@@ -2,8 +2,8 @@ package org.cc;
 
 import picocli.CommandLine;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
@@ -17,6 +17,9 @@ public class WCTool implements Callable<Integer> {
 
     @CommandLine.Parameters(index = "0", description = "Input File", arity = "0..1")
     private File file;
+
+    @CommandLine.Option(names = {"-i"}, description = "Use Buffered Input Stream To Read File")
+    private boolean useBufferedInputStream;
 
     @CommandLine.Option(names = {"-c"}, description = "Number of Bytes in the File")
     private boolean noOfBytes;
@@ -33,9 +36,37 @@ public class WCTool implements Callable<Integer> {
     @Override
     public Integer call() throws IOException {
 
+        // Start measuring execution time
+        long startTime = System.nanoTime();
+
+        if (useBufferedInputStream) {
+            System.out.println(getResultByBufferedInputStream());
+        } else {
+            System.out.println(getResultMethodByFileReadBytes());
+        }
+
+        // Stop measuring execution time
+        long endTime = System.nanoTime();
+
+        // Calculate the execution time in milliseconds
+        long executionTime = (endTime - startTime) / 1000000;
+        System.out.println("Method Execution takes " + executionTime + "ms");
+
+        return 0;
+    }
+
+    public String getResultByBufferedInputStream() throws IOException {
+        byte[] bytes;
+        try (FileInputStream is = new FileInputStream(file);
+             BufferedInputStream bis = new BufferedInputStream(is)) {
+            bytes = bis.readAllBytes();
+        }
+        return getResult(file.getName(), bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
+    }
+
+    public String getResultMethodByFileReadBytes() throws IOException {
         byte[] bytes;
         String fileName = "";
-
         if (file != null) {
             bytes = Files.readAllBytes(file.toPath());
             fileName = file.getName();
@@ -43,10 +74,7 @@ public class WCTool implements Callable<Integer> {
             bytes = System.in.readAllBytes();
         }
 
-        String result = getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
-        System.out.println(result);
-
-        return 0;
+        return getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
     }
 
     public String getResult(String fileName, byte[] bytes, boolean noOfBytes, boolean noOfLines,
