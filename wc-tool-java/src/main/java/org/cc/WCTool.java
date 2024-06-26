@@ -39,11 +39,18 @@ public class WCTool implements Callable<Integer> {
         // Start measuring execution time
         long startTime = System.nanoTime();
 
-        if (useBufferedInputStream) {
-            System.out.println(getResultByBufferedInputStream());
+        String result;
+        if (file != null) {
+            if (useBufferedInputStream) {
+                result = getResultByBufferedInputStream();
+            } else {
+                result = getResultByFileReadBytes();
+            }
         } else {
-            System.out.println(getResultMethodByFileReadBytes());
+            result = getResultBySystemIn();
         }
+
+        System.out.println(result);
 
         // Stop measuring execution time
         long endTime = System.nanoTime();
@@ -64,17 +71,20 @@ public class WCTool implements Callable<Integer> {
         return getResult(file.getName(), bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
     }
 
-    public String getResultMethodByFileReadBytes() throws IOException {
-        byte[] bytes;
+    public String getResultByFileReadBytes() throws IOException {
+        byte[] bytes = new byte[0];
         String fileName = "";
         if (file != null) {
             bytes = Files.readAllBytes(file.toPath());
             fileName = file.getName();
-        } else {
-            bytes = System.in.readAllBytes();
         }
 
         return getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
+    }
+
+    public String getResultBySystemIn() throws IOException {
+        byte[] bytes = System.in.readAllBytes();
+        return getResult("", bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
     }
 
     public String getResult(String fileName, byte[] bytes, boolean noOfBytes, boolean noOfLines,
