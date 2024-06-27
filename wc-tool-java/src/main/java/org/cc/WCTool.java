@@ -2,9 +2,12 @@ package org.cc;
 
 import picocli.CommandLine;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -36,28 +39,33 @@ public class WCTool implements Callable<Integer> {
     @Override
     public Integer call() throws IOException {
 
-        // Start measuring execution time
-        long startTime = System.nanoTime();
-
         String result;
-        if (file != null) {
-            if (useBufferedInputStream) {
-                result = getResultByBufferedInputStream();
+        try {
+
+            // Start measuring execution time
+            long startTime = System.nanoTime();
+
+            if (file != null) {
+                if (useBufferedInputStream) {
+                    result = getResultByBufferedInputStream();
+                } else {
+                    result = getResultByFileReadBytes();
+                }
             } else {
-                result = getResultByFileReadBytes();
+                result = getResultBySystemIn();
             }
-        } else {
-            result = getResultBySystemIn();
+            System.out.println(result);
+
+            // Stop measuring execution time
+            long endTime = System.nanoTime();
+
+            // Calculate the execution time in milliseconds
+            long executionTime = (endTime - startTime) / 1000000;
+            System.out.println("Method Execution takes " + executionTime + "ms");
+
+        } catch (IOException e) {
+            System.out.printf("Exception Occurred. %s", e);
         }
-
-        System.out.println(result);
-
-        // Stop measuring execution time
-        long endTime = System.nanoTime();
-
-        // Calculate the execution time in milliseconds
-        long executionTime = (endTime - startTime) / 1000000;
-        System.out.println("Method Execution takes " + executionTime + "ms");
 
         return 0;
     }
@@ -78,7 +86,6 @@ public class WCTool implements Callable<Integer> {
             bytes = Files.readAllBytes(file.toPath());
             fileName = file.getName();
         }
-
         return getResult(fileName, bytes, noOfBytes, noOfLines, noOfWords, noOfCharacters);
     }
 
